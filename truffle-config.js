@@ -1,5 +1,6 @@
-require('dotenv').config();
-const HDWalletProvider = require('truffle-hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const NODE_API_KEY = process.env.INFURA_KEY || process.env.ALCHEMY_KEY;
 const isInfura = !!process.env.INFURA_KEY;
@@ -53,9 +54,9 @@ module.exports = {
     rinkeby: {
       provider: RinkebyProvider,
       network_id: '4',
-      skipDryRun: true,
-      gasPrice: 3000000000,
-      gas: GAS_LIMIT
+      gas: GAS_LIMIT,
+      gasPrice: 1 * 1e9,
+      skipDryRun: true
     },
     live: {
       gas: GAS_LIMIT,
