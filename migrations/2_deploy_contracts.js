@@ -10,7 +10,7 @@ module.exports = function(deployer, network, accounts) {
     proxyRegistryAddress = "0xa5409ec958c83c3f309868babaca7c86dcb077c1";
   }
 
-  const maxSupply = 512;
+  const maxSupply = 576;
   console.log('Using account', ownerAddress, 'maxSupply', maxSupply);
 
   deployer.deploy(FluxArtNFT,

@@ -88,11 +88,17 @@ contract SaleTokens is Context, AccessControlEnumerable {
         return 0;
     }
 
-    function claimReward(address[] memory beneficiaries) external {
-        for (uint256 i = 0; i < beneficiaries.length; i++) {
-            address beneficiary = beneficiaries[i];
-            uint256 available = availableRewardForClaim(beneficiary);
+    function claimAllReward() external {
+        for (uint256 beneficiaryId = 0; beneficiaryId < beneficiaryList.length; beneficiaryId++) {
+            address beneficiary = beneficiaryList[beneficiaryId];
+            require(beneficiary != address(0), "INCORRECT ADDRESS");
+            uint256 percent = percentByBeneficiaryId[beneficiaryId];
+            require(percent <= PERCENT_PRECISION, "INCORRECT PERCENT");
+            uint256 available = salesAmount * percent / PERCENT_PRECISION;
+            uint256 claimedAmount = claimedAmountByBeneficiaryId[beneficiaryId];
+            available -= claimedAmount;
             if (available > 0) {
+                claimedAmountByBeneficiaryId[beneficiaryId] += available;
                 payable(beneficiary).transfer(available);
             }
         }

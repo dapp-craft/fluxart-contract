@@ -7,13 +7,13 @@ module.exports = function(deployer, network, accounts) {
   let ownerAddress = accounts[0];
   console.log('Using account', ownerAddress, 'NFT Collection', FluxArtNFT.address);
 
-  const price = web3.utils.toWei('0.015', "ether");
+  const price = web3.utils.toWei('0.1', "ether");
     let fluxArtNFT_instance;
 
   deployer.deploy(SaleTokens,
       FluxArtNFT.address,
-      ['0xF0D193D8524eC55fe2F5159aaD2BA1A264993605', ownerAddress],
-      [9900,100],
+      ['0xf49056577a9266cd6CFd1B8f6ac151D9BB3671d7'],
+      [10000],
       price,
 
       {from: ownerAddress})
