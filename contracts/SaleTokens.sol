@@ -24,6 +24,7 @@ contract SaleTokens is Context, AccessControlEnumerable {
     ERC721Collection public nftCollection;
 
     uint256 constant PERCENT_PRECISION = 10000;
+    address payable public fundAddress;
 
     event SoldNFT(
         address indexed _caller,
@@ -41,10 +42,12 @@ contract SaleTokens is Context, AccessControlEnumerable {
         ERC721Collection _nftCollection,
         address[] memory _beneficiaryList,
         uint256[] memory _beneficiaryPercentList,
-        uint256 _price
+        uint256 _price,
+        address payable _fundAddress
     ) {
         nftCollection = _nftCollection;
         price = _price;
+        fundAddress = _fundAddress;
         _setBeneficiaries(_beneficiaryList, _beneficiaryPercentList);
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -56,6 +59,7 @@ contract SaleTokens is Context, AccessControlEnumerable {
 */
     function buyNFT(uint256 _count) public payable {
         require(_count >= 1, "Count must more or equal 1");
+        require(_count <= 25, "Count must more or equal 25");
 
         uint256 balance = msg.value;
         require(balance == price*_count, "Not enough sent");
@@ -71,34 +75,30 @@ contract SaleTokens is Context, AccessControlEnumerable {
     function availableRewardForClaim(address beneficiary)
     public view returns (uint256)
     {
-        uint256 available = 0;
         for (uint256 beneficiaryId = 0; beneficiaryId < beneficiaryList.length; beneficiaryId++) {
             if (beneficiaryList[beneficiaryId] == beneficiary) {
-                uint256 percent = percentByBeneficiaryId[beneficiaryId];
-                available += salesAmount * percent / PERCENT_PRECISION;
-                uint256 claimedAmount = claimedAmountByBeneficiaryId[beneficiaryId];
-                if (available > claimedAmount) {
-                    available -= claimedAmount;
-                    return available;
-                } else {
-                    return 0;
-                }
+                uint256 contractBalance = address(this).balance;
+                uint256 shareSize = contractBalance / PERCENT_PRECISION;
+                require(beneficiary != address(0), "INCORRECT ADDRESS");
+                uint256 share = percentByBeneficiaryId[beneficiaryId];
+                require(share <= PERCENT_PRECISION, "INCORRECT PERCENT");
+                return shareSize * share;
             }
         }
+        require(false, "INCORRECT ADDRESS");
         return 0;
     }
 
     function claimAllReward() external {
+        uint256 contractBalance = address(this).balance;
+        uint256 shareSize = contractBalance / PERCENT_PRECISION;
         for (uint256 beneficiaryId = 0; beneficiaryId < beneficiaryList.length; beneficiaryId++) {
             address beneficiary = beneficiaryList[beneficiaryId];
             require(beneficiary != address(0), "INCORRECT ADDRESS");
-            uint256 percent = percentByBeneficiaryId[beneficiaryId];
-            require(percent <= PERCENT_PRECISION, "INCORRECT PERCENT");
-            uint256 available = salesAmount * percent / PERCENT_PRECISION;
-            uint256 claimedAmount = claimedAmountByBeneficiaryId[beneficiaryId];
-            available -= claimedAmount;
+            uint256 share = percentByBeneficiaryId[beneficiaryId];
+            require(share <= PERCENT_PRECISION, "INCORRECT PERCENT");
+            uint256 available = shareSize * share;
             if (available > 0) {
-                claimedAmountByBeneficiaryId[beneficiaryId] += available;
                 payable(beneficiary).transfer(available);
             }
         }
@@ -121,7 +121,6 @@ contract SaleTokens is Context, AccessControlEnumerable {
         require(sumPercent == PERCENT_PRECISION, "Sum percent must 100%");
     }
 
-
     function setPrice(uint256 _price) external {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "FluxArtNFT: must have admin role");
         price = _price;
@@ -133,5 +132,17 @@ contract SaleTokens is Context, AccessControlEnumerable {
     ) external {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "FluxArtNFT: must have admin role");
         _setBeneficiaries(_beneficiaryList, _beneficiaryPercentList);
+    }
+
+    function mint(address _to, uint256 _count) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "FluxArtNFT: must have admin role");
+        for (uint256 i = 0; i < _count; i++) {
+            nftCollection.mint(_to);
+        }
+    }
+
+    function finalize() external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "FluxArtNFT: must have admin role");
+        selfdestruct(fundAddress);
     }
 }
