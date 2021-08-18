@@ -61,7 +61,7 @@ module.exports = {
     live: {
       gas: GAS_LIMIT,
       provider: MainProvider,
-      from: MainProvider.address,
+      from: process.env.OWNER_ADDRESS,
       gasPrice: GAS_PRICE,
       network_id: 1
     }

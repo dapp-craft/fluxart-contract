@@ -6,8 +6,10 @@
   "scripts": {
     "test": "DEPLOY_ALL=1 truffle test",
     "deploy_rinkeby": "npx truffle migrate --f=3 --network rinkeby",
-    "deploy": "npx truffle migrate --network live",
-    "verify": "npx truffle run verify FluxArtNFT SaleTokens --network live"
+    "deploy": "npx truffle migrate --f=3 --network live",
+    "verify_all": "npx truffle run verify FluxArtNFT SaleTokens --network live",
+    "verify": "npx truffle run verify SaleTokens@0xB42b73e576Fef05b156c6D14EC16aCda3b22AC65 --network live",
+    "verify_rinkeby": "npx truffle run verify SaleTokens --network rinkeby"
   },
   "repository": {
     "type": "git",

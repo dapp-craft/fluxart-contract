@@ -15,8 +15,8 @@ module.exports = function(deployer, network, accounts) {
 
   deployer.deploy(FluxArtNFT,
       proxyRegistryAddress,
-      maxSupply,
-      {from: ownerAddress})
+      maxSupply
+  )
       .catch(function(err) {
         console.log("ERROR! ", err.message);
       });
